@@ -2,8 +2,11 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Product } from '@/types/product';
 import styles from '@/styles/ProductCard.module.css';
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { useMediaQuery } from '@react-hook/media-query';
 
 // Function to check if a URL is a video file
 function isVideoFile(url: string): boolean {
@@ -63,274 +66,108 @@ const checkVideoSupport = (videoUrl: string): boolean => {
 export default function ProductCard({ product }: { product: Product }) {
   // State for managing navigation between media elements
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [mediaError, setMediaError] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  
+  // Check if device is mobile using a media query
+  const isMobile = useMediaQuery('(max-width: 768px)');
   
   // Get all media URLs for the product
-  const allMedia = React.useMemo(() => {
+  const mediaUrls = product.mediaUrls || [];
+  const videoUrls = product.videoUrls || [];
+  const allMedia = [...mediaUrls, ...videoUrls];
+  const hasNavigation = allMedia.length > 1;
+  
+  // State for tracking video readiness
+  const [videoReady, setVideoReady] = useState(false);
+  
+  // Check if current media is a video
+  const isCurrentMediaVideo = allMedia[currentMediaIndex] ? isVideoFile(allMedia[currentMediaIndex]) : false;
+  
+  // Get all media URLs for the product
+  const allMediaMemo = React.useMemo(() => {
     const mediaArray: string[] = [];
     
-    // Add main image
-    if (product.image) {
+    // Add media URLs
+    if (product.mediaUrls && product.mediaUrls.length > 0) {
+      mediaArray.push(...product.mediaUrls);
+    }
+    
+    // Add video URLs
+    if (product.videoUrls && product.videoUrls.length > 0) {
+      mediaArray.push(...product.videoUrls);
+    }
+    
+    // If no media, use the main image
+    if (mediaArray.length === 0 && product.image) {
       mediaArray.push(product.image);
-    }
-    
-    // Add additional images if they exist
-    if (product.mediaUrls && Array.isArray(product.mediaUrls)) {
-      product.mediaUrls.forEach(url => {
-        // Check to avoid duplicates
-        if (!mediaArray.includes(url)) {
-          mediaArray.push(url);
-        }
-      });
-    }
-    
-    // Add videos if they exist
-    if (product.videoUrls && Array.isArray(product.videoUrls)) {
-      product.videoUrls.forEach(url => {
-        // Check to avoid duplicates
-        if (!mediaArray.includes(url)) {
-          mediaArray.push(url);
-        }
-      });
     }
     
     return mediaArray;
   }, [product]);
   
-  // Check if current media is video
-  const isCurrentMediaVideo = currentMediaIndex < allMedia.length ? 
-    isVideoFile(allMedia[currentMediaIndex]) : false;
+  // Handle mouse enter/leave for hover state
+  const handleMouseEnter = () => setIsHovered(true);
+  const handleMouseLeave = () => setIsHovered(false);
   
-  // State for tracking loading errors
-  const [mediaError, setMediaError] = useState(false);
+  // Handle navigation to previous/next media
+  const prevMedia = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCurrentMediaIndex((prevIndex) => (prevIndex === 0 ? allMedia.length - 1 : prevIndex - 1));
+    setMediaError(false);
+    setVideoReady(false);
+    setIsLoading(true);
+  };
   
-  // State for tracking video readiness
-  const [videoReady, setVideoReady] = useState(false);
+  const nextMedia = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCurrentMediaIndex((prevIndex) => (prevIndex === allMedia.length - 1 ? 0 : prevIndex + 1));
+    setMediaError(false);
+    setVideoReady(false);
+    setIsLoading(true);
+  };
   
-  // Determine if this is a mobile device
-  const [isMobile, setIsMobile] = useState(false);
+  // Video error handling
+  const handleVideoError = () => {
+    setMediaError(true);
+    setVideoReady(false);
+  };
   
-  // Reference to video element
-  const videoRef = useRef<HTMLVideoElement>(null);
-  
-  // State for tracking mouse hover
-  const [isHovered, setIsHovered] = useState(false);
-  
-  // Check mobile device on component mount
-  useEffect(() => {
-    setIsMobile(window.matchMedia('(max-width: 768px)').matches);
-    
-    // Add resize event listener
-    const handleResize = () => {
-      setIsMobile(window.matchMedia('(max-width: 768px)').matches);
-    };
-    
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-  
-  // Image error handler
   const handleImageError = () => {
     setMediaError(true);
+    setIsLoading(false);
   };
   
-  // Video error handler
-  const handleVideoError = () => {
-    console.error('Error loading video:', getCurrentVideoUrl());
-    setMediaError(true);
-    setVideoReady(false);
-    
-    // Show special message for mobile devices
-    if (isMobile) {
-      console.log('Video failed to load on mobile device');
-      // Remove automatic transition so user can see error message
-      // and decide what to do next
-    }
-  };
-  
-  // Function to handle video ready to play event
-  const handleVideoCanPlay = () => {
-    console.log('Video ready to play');
-    setVideoReady(true);
-    setMediaError(false);
-    
-    // Automatically play video only on desktop when mouse is hovered
-    if (videoRef.current && isHovered && !isMobile) {
-      videoRef.current.play().catch(error => {
-        console.error('Error playing video automatically:', error);
-      });
-    }
-  };
-  
-  // Add new function that will trigger when "Try again" button is clicked
   const handleRetryVideo = () => {
-    console.log('Retrying video playback');
     setMediaError(false);
     setVideoReady(false);
     
-    // Delay for reloading video
-    setTimeout(() => {
-      if (videoRef.current) {
-        // Reload video
-        videoRef.current.load();
-        
-        // On mobile devices try to play video after reloading
-        if (isMobile) {
-          videoRef.current.play().catch(err => {
-            console.error('Error playing video after reload:', err);
-            setMediaError(true);
-          });
-        }
-      }
-    }, 500);
-  };
-  
-  // Mouse hover handlers
-  const handleMouseEnter = () => {
-    setIsHovered(true);
-    
-    // If there's a video and it's available, play it
-    if (videoRef.current && isCurrentMediaVideo) {
-      // For mobile devices, don't auto-play video
-      // this helps reduce data usage
-      if (!isMobile) {
-        videoRef.current.play().catch((error) => {
-          console.error('Error playing video automatically:', error);
-          setMediaError(true);
-        });
-      }
-    }
-  };
-  
-  const handleMouseLeave = () => {
-    setIsHovered(false);
-    
-    // If there's a video, stop it
+    // Reset video element
     if (videoRef.current) {
-      videoRef.current.pause();
+      videoRef.current.load();
     }
   };
   
-  // Function for navigating to the next media
-  const nextMedia = (e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    if (allMedia.length > 1) {
-      setCurrentMediaIndex((prev) => (prev + 1) % allMedia.length);
-      setMediaError(false);
-      setVideoReady(false);
-    }
+  // Handle video ready state
+  const handleVideoCanPlay = () => {
+    setVideoReady(true);
   };
   
-  // Function for navigating to the previous media
-  const prevMedia = (e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    if (allMedia.length > 1) {
-      setCurrentMediaIndex((prev) => (prev - 1 + allMedia.length) % allMedia.length);
-      setMediaError(false);
-      setVideoReady(false);
-    }
-  };
-  
-  // Function to get image URL considering errors
-  const getImageUrl = (): string => {
-    if (mediaError || (isCurrentMediaVideo && !videoReady)) {
-      const placeholderId = (typeof product.id === 'string' ? product.id.charCodeAt(0) : 1) % 3 + 1;
-      return `/placeholder-${placeholderId}.svg`;
-    }
-    
-    if (isCurrentMediaVideo) {
-      // For video return a placeholder
-      const placeholderId = (typeof product.id === 'string' ? product.id.charCodeAt(0) : 1) % 3 + 1;
-      return `/placeholder-${placeholderId}.svg`;
-    }
-    
-    if (currentMediaIndex >= 0 && currentMediaIndex < allMedia.length) {
-      return allMedia[currentMediaIndex];
-    }
-    
-    return product.image || '/placeholder-1.svg';
-  };
-  
-  // Check if media navigation is available
-  const hasNavigation = allMedia.length > 1;
-  
-  // Get current video URL
-  const getCurrentVideoUrl = (): string | null => {
-    try {
-      if (currentMediaIndex >= 0 && currentMediaIndex < allMedia.length && isCurrentMediaVideo) {
-        const videoUrl = allMedia[currentMediaIndex];
-        
-        // Check if URL is valid
-        if (!videoUrl) return null;
-        
-        // Create URL object for validation
-        const url = new URL(videoUrl, window.location.origin);
-        
-        // For mobile devices use additional logging
-        if (isMobile) {
-          console.log('Playing video on mobile device:', videoUrl, url.pathname);
-        }
-        
-        return videoUrl;
-      }
-    } catch (e) {
-      console.error('Error getting video URL:', e);
-    }
-    return null;
-  };
-
-  // Function to open video in fullscreen
-  const openFullscreen = (e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
+  // Fullscreen handling for video
+  const openFullscreen = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     
     if (videoRef.current) {
       if (videoRef.current.requestFullscreen) {
         videoRef.current.requestFullscreen();
-      } else if ((videoRef.current as any).webkitRequestFullscreen) {
-        (videoRef.current as any).webkitRequestFullscreen();
-      } else if ((videoRef.current as any).msRequestFullscreen) {
-        (videoRef.current as any).msRequestFullscreen();
       }
     }
   };
-
-  // Update useEffect to track changes in current media
-  useEffect(() => {
-    setMediaError(false);
-    setVideoReady(false);
-    
-    // Add delay for mobile devices to reduce load
-    const timer = setTimeout(() => {
-      // If current media is video and user has hovered mouse,
-      // start playback, but only on desktops
-      if (videoRef.current && isHovered && isCurrentMediaVideo && !isMobile) {
-        videoRef.current.play().catch((error) => {
-          console.error('Error playing video:', error);
-          setMediaError(true);
-        });
-      }
-      
-      // For mobile devices just check if we can play the video
-      if (isCurrentMediaVideo && isMobile && videoRef.current) {
-        const videoUrl = getCurrentVideoUrl();
-        if (videoUrl) {
-          console.log('Checking video support for mobile device:', videoUrl);
-          
-          // Set explicit video size for better mobile device support
-          if (videoRef.current) {
-            videoRef.current.width = 320;
-            videoRef.current.height = 240;
-          }
-          
-          // For mobile devices on iOS there are often restrictions on autoplay
-          if (navigator && navigator.userAgent && /iPhone|iPad|iPod/.test(navigator.userAgent)) {
-            console.log('iOS device detected, video may not play automatically');
-          }
-        }
-      }
-    }, isMobile ? 500 : 0); // Delay for mobile devices
-    
-    return () => clearTimeout(timer);
-  }, [currentMediaIndex, isHovered, isCurrentMediaVideo, isMobile]);
 
   return (
     <div 
@@ -343,124 +180,65 @@ export default function ProductCard({ product }: { product: Product }) {
       
       {/* Container for media */}
       <div className={styles.mediaContainer}>
-        {/* Show image if current media is image or video not ready */}
-        {!isCurrentMediaVideo && (
-          <Image
-            src={getImageUrl()}
-            alt={product.Name}
-            className={styles.productImage}
-            width={300}
-            height={300}
-            onError={handleImageError}
-            priority={currentMediaIndex === 0}
-          />
-        )}
-        
-        {/* Show video if current media is video */}
-        {isCurrentMediaVideo && !mediaError && (
-          <div className={styles.videoWrapper}>
-            <video
-              ref={videoRef}
-              className={`${styles.productVideo} ${videoReady ? styles.videoReady : ''}`}
-              width={300}
-              height={300}
-              src={getCurrentVideoUrl() || undefined}
-              muted
-              playsInline
-              preload="metadata"
-              poster={getImageUrl()}
-              loop
-              controls={isMobile}
-              onCanPlay={handleVideoCanPlay}
-              onError={handleVideoError}
-              style={{ background: '#f8f8f8' }}
-            />
-            {!videoReady && !mediaError && (
-              <div className={styles.videoLoading}>
-                <div className={styles.loadingSpinner}></div>
-              </div>
-            )}
-            {videoReady && !mediaError && isMobile && (
-              <div 
-                className={styles.playButtonOverlay}
-                onClick={() => {
-                  if (videoRef.current) {
-                    if (videoRef.current.paused) {
-                      videoRef.current.play()
-                        .catch(err => {
-                          console.error('Error playing video:', err);
-                          setMediaError(true);
-                        });
-                    } else {
-                      videoRef.current.pause();
-                    }
-                  }
-                }}
-              >
-                <div className={styles.playButton}>
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="48" height="48">
-                    <path d="M8 5v14l11-7z"/>
-                  </svg>
-                </div>
-              </div>
-            )}
-            {videoReady && (isHovered || isMobile) && (
-              <button 
-                className={styles.fullscreenButton}
-                onClick={openFullscreen}
-                aria-label="View fullscreen"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
-                  <path d="M3 3h7v2H5v5H3V3m11 0h7v7h-2V5h-5V3m-9 11v7h7v-2H5v-5H3m11 5h5v-5h2v7h-7v-2z"/>
-                </svg>
-              </button>
-            )}
-          </div>
-        )}
-        
-        {/* Show placeholder if video has error */}
-        {isCurrentMediaVideo && mediaError && (
-          <div className={styles.videoErrorPlaceholder}>
-            <p>{isMobile ? 'Video unavailable on your device' : 'Video unavailable'}</p>
-            <button 
-              className={styles.retryButton}
-              onClick={handleRetryVideo}
-            >
-              Try again
-            </button>
-          </div>
-        )}
-        
-        {/* Navigation elements */}
-        {hasNavigation && (
+        {allMedia.length > 0 ? (
           <>
-            {/* Navigation counter */}
-            <div className={styles.mediaNavigation}>
-              <span className={styles.mediaCounter}>
-                {currentMediaIndex + 1} / {allMedia.length}
-              </span>
-            </div>
+            {isCurrentMediaVideo ? (
+              <video
+                ref={videoRef}
+                className={styles.productVideo}
+                src={allMedia[currentMediaIndex]}
+                controls
+                width={isMobile ? 240 : 300}
+                height={isMobile ? 240 : 300}
+                style={{ objectFit: isMobile ? 'contain' : 'cover', backgroundColor: '#f8f8f8' }}
+                onError={handleVideoError}
+                onCanPlay={handleVideoCanPlay}
+              />
+            ) : (
+              <>
+                {isLoading && <div className={styles.loadingSpinner} />}
+                <Image
+                  className={styles.productImage}
+                  src={allMedia[currentMediaIndex]}
+                  alt={`${product.Name} - фото ${currentMediaIndex + 1}`}
+                  width={isMobile ? 240 : 300}
+                  height={isMobile ? 240 : 300}
+                  quality={90}
+                  priority={currentMediaIndex === 0}
+                  loading={currentMediaIndex === 0 ? "eager" : "lazy"}
+                  sizes="(max-width: 480px) 240px, (max-width: 768px) 280px, 300px"
+                  onLoad={() => setIsLoading(false)}
+                  onLoadingComplete={() => setIsLoading(false)}
+                  onError={handleImageError}
+                />
+              </>
+            )}
             
             {/* Navigation buttons */}
-            <button 
-              className={`${styles.mediaButton} ${styles.prevButton}`} 
-              onClick={prevMedia}
-              aria-label="Previous media"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="15 18 9 12 15 6"></polyline>
-              </svg>
-            </button>
-            <button 
-              className={`${styles.mediaButton} ${styles.nextButton}`}
-              onClick={nextMedia}
-              aria-label="Next media"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="9 18 15 12 9 6"></polyline>
-              </svg>
-            </button>
+            {hasNavigation && (
+              <>
+                <button
+                  className={`${styles.mediaButton} ${styles.prevButton}`}
+                  onClick={prevMedia}
+                  aria-label="Попереднє зображення"
+                >
+                  <ChevronLeftIcon className={styles.buttonIcon} />
+                </button>
+                <button
+                  className={`${styles.mediaButton} ${styles.nextButton}`}
+                  onClick={nextMedia}
+                  aria-label="Наступне зображення"
+                >
+                  <ChevronRightIcon className={styles.buttonIcon} />
+                </button>
+                <div className={styles.mediaNavigation}>
+                  {currentMediaIndex + 1} / {allMedia.length}
+                </div>
+              </>
+            )}
           </>
+        ) : (
+          <div className={styles.noImage}>Зображення відсутнє</div>
         )}
       </div>
       

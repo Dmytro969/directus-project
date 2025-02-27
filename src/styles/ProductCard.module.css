@@ -375,14 +375,30 @@
 
 /* Мобільні стилі */
 @media (max-width: 768px) {
+  .card {
+    border-radius: 0.75rem;
+    overflow: hidden;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+  }
+  
   .card:hover {
     transform: none;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
   
   .mediaContainer {
-    height: 250px;
+    height: 280px;
     background-color: #f8f8f8;
+    justify-content: center;
+    align-items: center;
+    border-radius: 0.75rem 0.75rem 0 0;
+    overflow: hidden;
+  }
+  
+  .productImage {
+    object-fit: contain;
+    background-color: #f8f8f8;
+    padding: 0.5rem;
   }
   
   .prevButton, .nextButton {
@@ -399,6 +415,7 @@
     border-radius: 1rem;
     background-color: rgba(0, 0, 0, 0.8);
     border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
   }
   
   .mediaCounter {
@@ -447,12 +464,33 @@
     width: 50px;
     height: 50px;
   }
+  
+  .loadingSpinner {
+    width: 30px;
+    height: 30px;
+    border-width: 3px;
+  }
 }
 
 /* Телефони */
 @media (max-width: 480px) {
+  .card {
+    border-radius: 0.625rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
+  }
+  
   .mediaContainer {
-    height: 200px;
+    height: 240px;
+    background-color: #f8f8f8;
+    padding: 0.5rem 0;
+    border-radius: 0.625rem 0.625rem 0 0;
+  }
+  
+  .productImage {
+    object-fit: contain;
+    max-height: 100%;
+    max-width: 100%;
     background-color: #f8f8f8;
   }
   
@@ -496,6 +534,19 @@
   .playButton {
     width: 40px;
     height: 40px;
+  }
+  
+  .mediaNavigation {
+    bottom: 8px;
+    right: 8px;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.75rem;
+  }
+  
+  .loadingSpinner {
+    width: 24px;
+    height: 24px;
+    border-width: 2px;
   }
 }
 
@@ -546,6 +597,7 @@
   font-weight: 500;
   z-index: 10;
   border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .mediaCounter {
