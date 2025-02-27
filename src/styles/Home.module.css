@@ -1,0 +1,58 @@
+.main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 0.5rem;
+  color: #1f2937;
+}
+
+.subtitle {
+  font-size: 1rem;
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #6b7280;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Планшети */
+@media (max-width: 768px) {
+  .main {
+    padding: 1.5rem 1rem;
+  }
+
+  .title {
+    font-size: 1.75rem;
+  }
+  
+  .subtitle {
+    font-size: 0.9375rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
+/* Телефони */
+@media (max-width: 480px) {
+  .main {
+    padding: 1rem 0.75rem;
+  }
+  
+  .title {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  .subtitle {
+    font-size: 0.875rem;
+    margin-bottom: 1.25rem;
+    max-width: 100%;
+    padding: 0 0.5rem;
+  }
+} 
