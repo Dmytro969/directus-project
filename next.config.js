@@ -22,7 +22,6 @@ const nextConfig = {
   transpilePackages: ['@heroicons/react', '@react-hook/media-query'],
   experimental: {
     optimizePackageImports: ['@heroicons/react', '@react-hook/media-query'],
-    esmExternals: 'loose',
   },
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
@@ -32,6 +31,9 @@ const nextConfig = {
   },
   eslint: {
     ignoreDuringBuilds: true,
+  },
+  webpack: (config) => {
+    return config;
   },
 }
 

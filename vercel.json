@@ -5,6 +5,9 @@
   "framework": "nextjs",
   "outputDirectory": ".next",
   "env": {
-    "NEXT_PUBLIC_DIRECTUS_URL": "https://suppinfo.directus.app"
+    "NEXT_PUBLIC_DIRECTUS_URL": "https://suppinfo.directus.app",
+    "NODE_ENV": "production",
+    "TAILWIND_CONFIG_FILE": "tailwind.config.js",
+    "POSTCSS_CONFIG_FILE": "postcss.config.js"
   }
 } 
