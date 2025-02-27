@@ -19,6 +19,27 @@ function isVideoFile(url: string): boolean {
   return knownVideoIds.some(id => url.includes(id));
 }
 
+// Додамо функцію для визначення, чи підтримується відео на пристрої
+const checkVideoSupport = (videoUrl: string): boolean => {
+  // Перевіряємо формат відео на сумісність з пристроєм
+  const videoFormats = {
+    mp4: 'video/mp4',
+    webm: 'video/webm',
+    ogg: 'video/ogg',
+    mov: 'video/quicktime',
+    avi: 'video/x-msvideo'
+  };
+  
+  const ext = videoUrl.split('.').pop()?.toLowerCase() || '';
+  const mimeType = (ext in videoFormats) ? videoFormats[ext as keyof typeof videoFormats] : '';
+  
+  if (!mimeType) return true; // Якщо не можемо визначити тип, припустимо, що підтримується
+  
+  // Перевіряємо підтримку через HTML5 video element
+  const video = document.createElement('video');
+  return video.canPlayType(mimeType) !== '';
+};
+
 // Компонент карточки продукту
 export default function ProductCard({ product }: { product: Product }) {
   // Стан для керування навігацією між медіа елементами
@@ -66,11 +87,27 @@ export default function ProductCard({ product }: { product: Product }) {
   // Стан для відстеження готовності відео
   const [videoReady, setVideoReady] = useState(false);
   
+  // Визначення, чи це мобільний пристрій
+  const [isMobile, setIsMobile] = useState(false);
+  
   // Посилання на відео елемент
   const videoRef = useRef<HTMLVideoElement>(null);
   
   // Стан для відстеження наведення миші
   const [isHovered, setIsHovered] = useState(false);
+  
+  // Перевірка мобільного пристрою при монтуванні компонента
+  useEffect(() => {
+    setIsMobile(window.matchMedia('(max-width: 768px)').matches);
+    
+    // Додаємо прослуховувач зміни розміру екрана
+    const handleResize = () => {
+      setIsMobile(window.matchMedia('(max-width: 768px)').matches);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   
   // Обробник помилки завантаження зображення
   const handleImageError = () => {
@@ -79,13 +116,40 @@ export default function ProductCard({ product }: { product: Product }) {
   
   // Обробник помилки завантаження відео
   const handleVideoError = () => {
+    console.error('Помилка завантаження відео:', getCurrentVideoUrl());
     setMediaError(true);
+    setVideoReady(false);
+    
+    // Показуємо спеціальне повідомлення для мобільних пристроїв
+    if (isMobile) {
+      // Можна додати специфічну для мобільних пристроїв логіку
+      console.log('Відео не вдалося завантажити на мобільному пристрої');
+    }
   };
   
   // Обробник готовності відео
   const handleVideoCanPlay = () => {
+    console.log('Відео готове до відтворення');
     setVideoReady(true);
     setMediaError(false);
+    
+    // Якщо це мобільний пристрій, спробуємо автоматично встановити постер
+    if (isMobile && videoRef.current) {
+      try {
+        // Створюємо зображення-постер з першого кадру відео
+        const canvas = document.createElement('canvas');
+        canvas.width = videoRef.current.videoWidth;
+        canvas.height = videoRef.current.videoHeight;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+          const posterUrl = canvas.toDataURL('image/jpeg');
+          videoRef.current.poster = posterUrl;
+        }
+      } catch (e) {
+        console.error('Не вдалося створити постер для відео:', e);
+      }
+    }
   };
   
   // Обробники наведення миші
@@ -94,9 +158,14 @@ export default function ProductCard({ product }: { product: Product }) {
     
     // Якщо є відео і воно доступне, запускаємо його
     if (videoRef.current && isCurrentMediaVideo) {
-      videoRef.current.play().catch(() => {
-        setMediaError(true);
-      });
+      // Для мобільних пристроїв не починаємо автоматичне відтворення відео
+      // це допоможе зменшити використання трафіку
+      if (!isMobile) {
+        videoRef.current.play().catch((error) => {
+          console.error('Помилка автоматичного відтворення відео:', error);
+          setMediaError(true);
+        });
+      }
     }
   };
   
@@ -152,24 +221,56 @@ export default function ProductCard({ product }: { product: Product }) {
   // Функція для перевірки, чи є медіа навігація
   const hasNavigation = allMedia.length > 1;
   
-  // Відстежуємо зміни поточного медіа
+  // Оновимо useEffect для відстеження змін поточного медіа
   useEffect(() => {
     setMediaError(false);
     setVideoReady(false);
     
-    // Якщо поточне медіа є відео і користувач навів мишку,
-    // почнемо відтворення
-    if (videoRef.current && isHovered && isCurrentMediaVideo) {
-      videoRef.current.play().catch(() => {
-        setMediaError(true);
-      });
-    }
-  }, [currentMediaIndex, isHovered, isCurrentMediaVideo]);
+    // Додамо затримку для мобільних пристроїв, щоб зменшити навантаження
+    const timer = setTimeout(() => {
+      // Якщо поточне медіа є відео і користувач навів мишку,
+      // почнемо відтворення, але тільки на десктопах
+      if (videoRef.current && isHovered && isCurrentMediaVideo && !isMobile) {
+        videoRef.current.play().catch((error) => {
+          console.error('Помилка відтворення відео:', error);
+          setMediaError(true);
+        });
+      }
+      
+      // Для мобільних пристроїв просто перевіримо, чи можемо ми відтворити відео
+      if (isCurrentMediaVideo && isMobile && videoRef.current) {
+        const videoUrl = getCurrentVideoUrl();
+        if (videoUrl) {
+          const isSupported = checkVideoSupport(videoUrl);
+          if (!isSupported) {
+            console.warn('Формат відео не підтримується на цьому пристрої:', videoUrl);
+            setMediaError(true);
+          }
+        }
+      }
+    }, isMobile ? 500 : 0); // Затримка для мобільних пристроїв
+    
+    return () => clearTimeout(timer);
+  }, [currentMediaIndex, isHovered, isCurrentMediaVideo, isMobile]);
   
   // Отримуємо поточний відео URL
   const getCurrentVideoUrl = (): string | null => {
     if (currentMediaIndex >= 0 && currentMediaIndex < allMedia.length && isCurrentMediaVideo) {
-      return allMedia[currentMediaIndex];
+      const videoUrl = allMedia[currentMediaIndex];
+      
+      // Перевіряємо, чи URL містить один з відомих відеоформатів
+      // Це може бути корисним для мобільних пристроїв, які підтримують різні формати
+      const url = new URL(videoUrl, window.location.origin);
+      const pathLower = url.pathname.toLowerCase();
+      
+      // Якщо це мобільний пристрій, спробуємо визначити найкращий формат
+      if (isMobile) {
+        // Більшість мобільних пристроїв краще підтримують MP4
+        // Для інших форматів можна вибрати альтернативне джерело
+        console.log('Відтворення відео на мобільному пристрої:', videoUrl);
+      }
+      
+      return videoUrl;
     }
     return null;
   };
@@ -224,12 +325,14 @@ export default function ProductCard({ product }: { product: Product }) {
               src={getCurrentVideoUrl() || undefined}
               muted
               playsInline
+              preload="metadata"
+              poster={getImageUrl()}
               loop
-              controls={isHovered || window.matchMedia('(max-width: 768px)').matches}
+              controls={isHovered || isMobile}
               onCanPlay={handleVideoCanPlay}
               onError={handleVideoError}
             />
-            {videoReady && isHovered && !window.matchMedia('(max-width: 768px)').matches && (
+            {videoReady && (isHovered || isMobile) && (
               <button 
                 className={styles.fullscreenButton}
                 onClick={openFullscreen}
@@ -246,7 +349,24 @@ export default function ProductCard({ product }: { product: Product }) {
         {/* Show placeholder if video has error */}
         {isCurrentMediaVideo && mediaError && (
           <div className={styles.videoErrorPlaceholder}>
-            <p>Video unavailable</p>
+            <p>{isMobile ? 'Відео недоступне на вашому пристрої' : 'Video unavailable'}</p>
+            {isMobile && (
+              <button 
+                className={styles.retryButton}
+                onClick={() => {
+                  setMediaError(false);
+                  setVideoReady(false);
+                  // Невелика затримка перед повторною спробою
+                  setTimeout(() => {
+                    if (videoRef.current) {
+                      videoRef.current.load();
+                    }
+                  }, 500);
+                }}
+              >
+                Спробувати знову
+              </button>
+            )}
           </div>
         )}
         
@@ -279,24 +399,18 @@ export default function ProductCard({ product }: { product: Product }) {
         )}
       </div>
       
-      {/* Product information */}
+      {/* Інформація про продукт */}
       <div className={styles.info}>
         <h3 className={styles.name}>{product.Name}</h3>
-        {product.THC && (
-          <div className={styles.thc}>
-            <span className={styles.thcLabel}>THC:</span> {product.THC}
-          </div>
-        )}
-        {product.Aroma && (
-          <div className={styles.aroma}>
-            <span className={styles.aromaLabel}>Aroma:</span> {product.Aroma}
-          </div>
-        )}
-        {product.Effects && (
-          <div className={styles.effects}>
-            <span className={styles.effectsLabel}>Effects:</span> {product.Effects}
-          </div>
-        )}
+        <p className={styles.thc}>
+          <span className={styles.thcLabel}>THC:</span> {product.THC}%
+        </p>
+        <p className={styles.aroma}>
+          <span className={styles.aromaLabel}>Aroma:</span> {product.Aroma}
+        </p>
+        <p className={styles.effects}>
+          <span className={styles.effectsLabel}>Effects:</span> {product.Effects}
+        </p>
       </div>
     </div>
   );

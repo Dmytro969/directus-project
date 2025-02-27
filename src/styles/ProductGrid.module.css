@@ -1,7 +1,20 @@
-.gridContainer {
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.grid {
   display: grid;
-  grid-template-columns: repeat(1, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.loading, .error, .empty {
+  text-align: center;
+  margin: 2rem 0;
+  color: #4b5563;
 }
 
 .loadingContainer {
@@ -78,24 +91,32 @@
   background-color: rgba(0, 0, 0, 0.15);
 }
 
-/* Responsive styles */
-@media (min-width: 480px) {
-  .gridContainer {
-    grid-template-columns: repeat(2, 1fr);
+/* Мобільні стилі */
+@media (max-width: 768px) {
+  .container {
+    padding: 0.75rem;
+  }
+  
+  .grid {
     gap: 1rem;
+    margin-top: 1.5rem;
   }
 }
 
-@media (min-width: 768px) {
-  .gridContainer {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.25rem;
+/* Телефони */
+@media (max-width: 480px) {
+  .container {
+    padding: 0.5rem;
   }
-}
-
-@media (min-width: 1024px) {
-  .gridContainer {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.5rem;
+  
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .loading, .error, .empty {
+    margin: 1.5rem 0;
+    font-size: 0.9rem;
   }
 } 

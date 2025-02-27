@@ -7,7 +7,7 @@ import styles from '@/styles/ProductGrid.module.css';
 
 export default function ProductGrid() {
   const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
@@ -57,7 +57,7 @@ export default function ProductGrid() {
     setRetryCount(prev => prev + 1);
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className={styles.loadingContainer}>
         <div className={styles.spinner}></div>
@@ -102,10 +102,20 @@ export default function ProductGrid() {
   }
 
   return (
-    <div className={styles.gridContainer}>
-      {products.map((product) => (
-        <ProductCard key={product.id} product={product} />
-      ))}
+    <div className={styles.container}>
+      {isLoading ? (
+        <div className={styles.loading}>Loading products...</div>
+      ) : error ? (
+        <div className={styles.error}>Error loading products. Please try again.</div>
+      ) : products.length === 0 ? (
+        <div className={styles.empty}>No products found.</div>
+      ) : (
+        <div className={styles.grid}>
+          {products.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      )}
     </div>
   );
 } 

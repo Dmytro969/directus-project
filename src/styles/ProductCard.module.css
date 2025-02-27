@@ -221,8 +221,21 @@
 
 .thc {
   font-size: 0.875rem;
-  color: #4b5563;
+  color: #1f2937;
   margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.aroma, .effects {
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+  color: #1f2937;
+}
+
+.aromaLabel, .effectsLabel, .thcLabel {
+  font-weight: 600;
+  color: #111827;
+  margin-right: 0.25rem;
 }
 
 .price {
@@ -253,10 +266,18 @@
 
 .mediaContainer {
   position: relative;
-  height: 300px;
   width: 100%;
   overflow: hidden;
   background-color: #f5f5f5;
+  aspect-ratio: 1 / 1;
+  max-height: 350px;
+}
+
+.productImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: opacity 0.3s ease;
 }
 
 .mediaNavigation {
@@ -315,10 +336,52 @@
   width: 100%;
   height: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   background-color: #f8f8f8;
-  color: #666;
+  color: #333;
+  padding: 1rem;
+  text-align: center;
+}
+
+.videoErrorPlaceholder p {
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.retryButton {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.retryButton:hover {
+  background-color: #2563eb;
+}
+
+/* Додаткові стилі для відео */
+.productVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background-color: #000;
+}
+
+.videoReady {
+  opacity: 1;
+}
+
+.videoContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-color: #000;
 }
 
 /* Мобільні стилі */
@@ -328,7 +391,8 @@
   }
   
   .mediaContainer {
-    height: 250px;
+    aspect-ratio: 1 / 1;
+    max-height: 300px;
   }
   
   .prevButton, .nextButton {
@@ -341,33 +405,69 @@
   .mediaNavigation {
     top: 1rem;
     padding: 0.4rem 0.8rem;
+    background-color: rgba(0, 0, 0, 0.5);
   }
   
   .mediaCounter {
     font-size: 1rem;
+    font-weight: 600;
   }
   
   .info {
     padding: 0.75rem;
+  }
+  
+  .name {
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+  
+  .thc, .aroma, .effects {
+    font-size: 0.9rem;
+    color: #1f2937;
+    margin-bottom: 0.6rem;
+  }
+  
+  .fullscreenButton {
+    opacity: 0.9;
+    width: 42px;
+    height: 42px;
+  }
+  
+  .videoErrorPlaceholder {
+    font-size: 0.9rem;
+  }
+  
+  .productVideo {
+    max-height: 100%;
   }
 }
 
 /* Телефони */
 @media (max-width: 480px) {
   .mediaContainer {
-    height: 200px;
+    aspect-ratio: 1 / 1;
+    max-height: none;
   }
   
   .name {
     font-size: 1rem;
+    font-weight: 700;
   }
   
   .thc, .aroma, .effects {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #1f2937;
   }
   
   .prevButton, .nextButton {
     width: 2.5rem;
     height: 2.5rem;
+  }
+  
+  .aromaLabel, .effectsLabel, .thcLabel {
+    font-weight: 700;
+    color: #111827;
   }
 } 
