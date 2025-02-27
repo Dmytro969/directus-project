@@ -74,6 +74,24 @@ This will:
 3. Populate the database with test data
 4. Start the Next.js development server
 
+## Deployment
+
+### Deploying to Vercel
+
+This project includes special configurations for deploying on Vercel:
+
+1. A custom `vercel.json` file that specifies build and install commands
+2. A pre-build script that ensures all dependencies are correctly installed
+3. Transpile configurations for the external packages
+
+To deploy to Vercel:
+
+1. Link your GitHub repository to a Vercel project
+2. No additional environment variables are required for basic functionality
+3. Vercel will automatically detect the Next.js framework and deploy accordingly
+
+If you encounter any issues with dependencies on Vercel, the pre-build script in `scripts/vercel-build.js` will attempt to resolve them.
+
 ## Environment Setup
 
 Create a `.env.local` file in the root directory with the following content:
@@ -175,13 +193,13 @@ If videos don't play:
 3. Some browsers block autoplay - check browser console for warnings
 4. Ensure the video size is reasonable for web delivery
 
-### HTML Content in Product Fields
+### Dependency Issues on Vercel
 
-If you see HTML tags (like `<p>`) displayed in product fields:
+If you encounter build errors related to missing dependencies on Vercel:
 
-1. Make sure your API endpoint is properly cleaning HTML tags using the stripHtmlTags function
-2. Check if your Directus instance is configured to save HTML content in text fields
-3. If you want to render HTML instead of stripping it, use dangerouslySetInnerHTML in your React components, but be cautious about security implications
+1. The project includes a pre-build script that tries to resolve common dependency issues
+2. Check the build logs to see if specific packages are failing to install
+3. You may need to update the `vercel.json` and `next.config.js` files if new dependencies are added
 
 ## License
 

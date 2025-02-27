@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/vercel-build.js",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -19,6 +20,8 @@
   },
   "dependencies": {
     "@directus/sdk": "^18.0.3",
+    "@heroicons/react": "^2.2.0",
+    "@react-hook/media-query": "^1.1.1",
     "axios": "^1.6.7",
     "dotenv": "^16.4.5",
     "next": "15.1.7",

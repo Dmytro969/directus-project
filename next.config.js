@@ -19,6 +19,11 @@ const nextConfig = {
     unoptimized: false,
     minimumCacheTTL: 3600,
   },
+  transpilePackages: ['@heroicons/react', '@react-hook/media-query'],
+  experimental: {
+    optimizePackageImports: ['@heroicons/react', '@react-hook/media-query'],
+    esmExternals: 'loose',
+  },
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
   compress: true,

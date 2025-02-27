@@ -5,8 +5,77 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Product } from '@/types/product';
 import styles from '@/styles/ProductCard.module.css';
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
-import { useMediaQuery } from '@react-hook/media-query';
+
+// Спочатку спробуємо імпортувати з heroicons, якщо не вдасться, використаємо внутрішню версію
+let ChevronLeftIcon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+let ChevronRightIcon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+
+try {
+  const heroicons = require('@heroicons/react/24/outline');
+  ChevronLeftIcon = heroicons.ChevronLeftIcon;
+  ChevronRightIcon = heroicons.ChevronRightIcon;
+} catch (e) {
+  // Створюємо прості компоненти для SVG
+  ChevronLeftIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      width="24"
+      height="24"
+      {...props}
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.5L8.5 12l6.5-7.5" />
+    </svg>
+  );
+  
+  ChevronRightIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      width="24"
+      height="24"
+      {...props}
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="M8.5 19.5l7.5-7.5-7.5-7.5" />
+    </svg>
+  );
+}
+
+// Альтернативна функція для useMediaQuery, якщо бібліотека недоступна
+function useMediaQueryFallback(query: string): boolean {
+  const [matches, setMatches] = useState(false);
+  
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const mediaQuery = window.matchMedia(query);
+    setMatches(mediaQuery.matches);
+    
+    const handleChange = (e: MediaQueryListEvent) => {
+      setMatches(e.matches);
+    };
+    
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, [query]);
+  
+  return matches;
+}
+
+// Підключаємо useMediaQuery з бібліотеки або використовуємо наш fallback
+let useMediaQuery: (query: string) => boolean;
+
+try {
+  useMediaQuery = require('@react-hook/media-query').useMediaQuery;
+} catch (e) {
+  useMediaQuery = useMediaQueryFallback;
+}
 
 // Function to check if a URL is a video file
 function isVideoFile(url: string): boolean {
