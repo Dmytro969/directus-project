@@ -147,29 +147,41 @@ export default function ProductCard({ product }: { product: Product }) {
     }
   };
   
-  // Обробник готовності відео
+  // Функція для обробки події готовності відео до відтворення
   const handleVideoCanPlay = () => {
     console.log('Відео готове до відтворення');
     setVideoReady(true);
     setMediaError(false);
     
-    // Якщо це мобільний пристрій, спробуємо автоматично встановити постер
-    if (isMobile && videoRef.current) {
-      try {
-        // Створюємо зображення-постер з першого кадру відео
-        const canvas = document.createElement('canvas');
-        canvas.width = videoRef.current.videoWidth;
-        canvas.height = videoRef.current.videoHeight;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-          const posterUrl = canvas.toDataURL('image/jpeg');
-          videoRef.current.poster = posterUrl;
-        }
-      } catch (e) {
-        console.error('Не вдалося створити постер для відео:', e);
-      }
+    // Автоматично відтворювати відео тільки на десктопі при наведенні миші
+    if (videoRef.current && isHovered && !isMobile) {
+      videoRef.current.play().catch(error => {
+        console.error('Помилка автоматичного відтворення відео:', error);
+      });
     }
+  };
+  
+  // Додаємо нову функцію, яка буде спрацьовувати при кліку на кнопку "Спробувати знову"
+  const handleRetryVideo = () => {
+    console.log('Повторна спроба відтворення відео');
+    setMediaError(false);
+    setVideoReady(false);
+    
+    // Затримка для перезавантаження відео
+    setTimeout(() => {
+      if (videoRef.current) {
+        // Перезавантажуємо відео
+        videoRef.current.load();
+        
+        // На мобільних пристроях спробуємо відтворити відео після перезавантаження
+        if (isMobile) {
+          videoRef.current.play().catch(err => {
+            console.error('Помилка при спробі відтворення відео після перезавантаження:', err);
+            setMediaError(true);
+          });
+        }
+      }
+    }, 500);
   };
   
   // Обробники наведення миші
@@ -241,39 +253,6 @@ export default function ProductCard({ product }: { product: Product }) {
   // Функція для перевірки, чи є медіа навігація
   const hasNavigation = allMedia.length > 1;
   
-  // Оновимо useEffect для відстеження змін поточного медіа
-  useEffect(() => {
-    setMediaError(false);
-    setVideoReady(false);
-    
-    // Додамо затримку для мобільних пристроїв, щоб зменшити навантаження
-    const timer = setTimeout(() => {
-      // Якщо поточне медіа є відео і користувач навів мишку,
-      // почнемо відтворення, але тільки на десктопах
-      if (videoRef.current && isHovered && isCurrentMediaVideo && !isMobile) {
-        videoRef.current.play().catch((error) => {
-          console.error('Помилка відтворення відео:', error);
-          setMediaError(true);
-        });
-      }
-      
-      // Для мобільних пристроїв просто перевіримо, чи можемо ми відтворити відео
-      if (isCurrentMediaVideo && isMobile && videoRef.current) {
-        const videoUrl = getCurrentVideoUrl();
-        if (videoUrl) {
-          const isSupported = checkVideoSupport(videoUrl);
-          if (!isSupported) {
-            console.warn('Формат відео не підтримується на цьому пристрої:', videoUrl);
-            setMediaError(true);
-            // Видаляємо автоматичний перехід, щоб користувач міг бачити повідомлення про помилку
-          }
-        }
-      }
-    }, isMobile ? 500 : 0); // Затримка для мобільних пристроїв
-    
-    return () => clearTimeout(timer);
-  }, [currentMediaIndex, isHovered, isCurrentMediaVideo, isMobile]);
-  
   // Отримуємо поточний відео URL
   const getCurrentVideoUrl = (): string | null => {
     try {
@@ -314,6 +293,45 @@ export default function ProductCard({ product }: { product: Product }) {
     }
   };
 
+  // Оновимо useEffect для відстеження змін поточного медіа
+  useEffect(() => {
+    setMediaError(false);
+    setVideoReady(false);
+    
+    // Додамо затримку для мобільних пристроїв, щоб зменшити навантаження
+    const timer = setTimeout(() => {
+      // Якщо поточне медіа є відео і користувач навів мишку,
+      // почнемо відтворення, але тільки на десктопах
+      if (videoRef.current && isHovered && isCurrentMediaVideo && !isMobile) {
+        videoRef.current.play().catch((error) => {
+          console.error('Помилка відтворення відео:', error);
+          setMediaError(true);
+        });
+      }
+      
+      // Для мобільних пристроїв просто перевіримо, чи можемо ми відтворити відео
+      if (isCurrentMediaVideo && isMobile && videoRef.current) {
+        const videoUrl = getCurrentVideoUrl();
+        if (videoUrl) {
+          console.log('Перевірка підтримки відео для мобільного пристрою:', videoUrl);
+          
+          // Встановлюємо явно розмір відео для кращої підтримки мобільних пристроїв
+          if (videoRef.current) {
+            videoRef.current.width = 320;
+            videoRef.current.height = 240;
+          }
+          
+          // Для мобільних пристроїв в iOS часто є обмеження на автоматичне відтворення
+          if (navigator && navigator.userAgent && /iPhone|iPad|iPod/.test(navigator.userAgent)) {
+            console.log('Виявлено iOS пристрій, відео може не відтворюватися автоматично');
+          }
+        }
+      }
+    }, isMobile ? 500 : 0); // Затримка для мобільних пристроїв
+    
+    return () => clearTimeout(timer);
+  }, [currentMediaIndex, isHovered, isCurrentMediaVideo, isMobile]);
+
   return (
     <div 
       className={styles.card}
@@ -352,9 +370,10 @@ export default function ProductCard({ product }: { product: Product }) {
               preload="metadata"
               poster={getImageUrl()}
               loop
-              controls={isHovered || isMobile}
+              controls={isMobile}
               onCanPlay={handleVideoCanPlay}
               onError={handleVideoError}
+              style={{ background: '#f8f8f8' }}
             />
             {!videoReady && !mediaError && (
               <div className={styles.videoLoading}>
@@ -368,7 +387,10 @@ export default function ProductCard({ product }: { product: Product }) {
                   if (videoRef.current) {
                     if (videoRef.current.paused) {
                       videoRef.current.play()
-                        .catch(err => console.error('Помилка відтворення відео:', err));
+                        .catch(err => {
+                          console.error('Помилка відтворення відео:', err);
+                          setMediaError(true);
+                        });
                     } else {
                       videoRef.current.pause();
                     }
@@ -400,23 +422,12 @@ export default function ProductCard({ product }: { product: Product }) {
         {isCurrentMediaVideo && mediaError && (
           <div className={styles.videoErrorPlaceholder}>
             <p>{isMobile ? 'Відео недоступне на вашому пристрої' : 'Video unavailable'}</p>
-            {isMobile && (
-              <button 
-                className={styles.retryButton}
-                onClick={() => {
-                  setMediaError(false);
-                  setVideoReady(false);
-                  // Невелика затримка перед повторною спробою
-                  setTimeout(() => {
-                    if (videoRef.current) {
-                      videoRef.current.load();
-                    }
-                  }, 500);
-                }}
-              >
-                Спробувати знову
-              </button>
-            )}
+            <button 
+              className={styles.retryButton}
+              onClick={handleRetryVideo}
+            >
+              Спробувати знову
+            </button>
           </div>
         )}
         
