@@ -31,18 +31,20 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     
     // Якщо це тестове відео
     if (id === 'video-placeholder.txt') {
-      const videoPath = path.join(process.cwd(), 'public', 'sample-video.mp4');
+      // Замість відео повертаємо зображення з повідомленням
+      const placeholderId = 1;
+      const placeholderPath = path.join(process.cwd(), 'public', `placeholder-${placeholderId}.svg`);
       
       try {
-        const videoData = await fs.promises.readFile(videoPath);
-        return new NextResponse(videoData, {
+        const placeholderData = await fs.promises.readFile(placeholderPath);
+        return new NextResponse(placeholderData, {
           headers: {
-            'Content-Type': 'video/mp4',
+            'Content-Type': 'image/svg+xml',
             'Cache-Control': 'public, max-age=3600'
           }
         });
-      } catch (_) {
-        // Відео не знайдено
+      } catch (error) {
+        console.error('Помилка при читанні плейсхолдера:', error);
       }
     }
     

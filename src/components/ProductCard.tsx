@@ -122,8 +122,11 @@ export default function ProductCard({ product }: { product: Product }) {
     
     // Показуємо спеціальне повідомлення для мобільних пристроїв
     if (isMobile) {
-      // Можна додати специфічну для мобільних пристроїв логіку
       console.log('Відео не вдалося завантажити на мобільному пристрої');
+      // Переходимо до наступного медіа, якщо воно є
+      if (allMedia.length > 1) {
+        nextMedia();
+      }
     }
   };
   
@@ -245,6 +248,10 @@ export default function ProductCard({ product }: { product: Product }) {
           if (!isSupported) {
             console.warn('Формат відео не підтримується на цьому пристрої:', videoUrl);
             setMediaError(true);
+            // Переходимо до наступного медіа, якщо воно є
+            if (allMedia.length > 1) {
+              nextMedia();
+            }
           }
         }
       }
