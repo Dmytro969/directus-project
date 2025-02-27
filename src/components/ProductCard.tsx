@@ -5,13 +5,13 @@ import Image from 'next/image';
 import { Product } from '@/types/product';
 import styles from '@/styles/ProductCard.module.css';
 
-// Функція перевірки, чи є URL відео файлом
+// Function to check if a URL is a video file
 function isVideoFile(url: string): boolean {
-  // Перевіряємо, чи URL не є пустим або undefined
+  // Check if URL is empty or undefined
   if (!url || typeof url !== 'string') return false;
   
   try {
-    // Перевірка за розширенням файлу
+    // Check by file extension
     const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.wmv', '.mkv'];
     const extensionMatch = url.match(/\.[0-9a-z]+$/i);
     
@@ -19,23 +19,23 @@ function isVideoFile(url: string): boolean {
       return true;
     }
     
-    // Перевірка за відомими ID відео файлів
+    // Check by known video file IDs
     const knownVideoIds = ['6f65b726-378e-4c07-aee6-95d197e6208b', 'video-placeholder.txt'];
     return knownVideoIds.some(id => url.includes(id));
   } catch (e) {
-    // Якщо є помилка при обробці URL, повертаємо false
-    console.error('Помилка при перевірці URL відео:', url, e);
+    // If there's an error processing the URL, return false
+    console.error('Error checking video URL:', url, e);
     return false;
   }
 }
 
-// Додамо функцію для визначення, чи підтримується відео на пристрої
+// Add function to check if video is supported on the device
 const checkVideoSupport = (videoUrl: string): boolean => {
-  // Перевіряємо, чи URL не є пустим або undefined
+  // Check if URL is empty or undefined
   if (!videoUrl || typeof videoUrl !== 'string') return false;
   
   try {
-    // Перевіряємо формат відео на сумісність з пристроєм
+    // Check video format compatibility with the device
     const videoFormats = {
       mp4: 'video/mp4',
       webm: 'video/webm',
@@ -47,46 +47,46 @@ const checkVideoSupport = (videoUrl: string): boolean => {
     const ext = videoUrl.split('.').pop()?.toLowerCase() || '';
     const mimeType = (ext in videoFormats) ? videoFormats[ext as keyof typeof videoFormats] : '';
     
-    if (!mimeType) return true; // Якщо не можемо визначити тип, припустимо, що підтримується
+    if (!mimeType) return true; // If we can't determine the type, assume it's supported
     
-    // Перевіряємо підтримку через HTML5 video element
+    // Check support via HTML5 video element
     const video = document.createElement('video');
     return video.canPlayType(mimeType) !== '';
   } catch (e) {
-    // Якщо є помилка при перевірці підтримки, повертаємо false
-    console.error('Помилка при перевірці підтримки відео:', videoUrl, e);
+    // If there's an error checking support, return false
+    console.error('Error checking video support:', videoUrl, e);
     return false;
   }
 };
 
-// Компонент карточки продукту
+// Product card component
 export default function ProductCard({ product }: { product: Product }) {
-  // Стан для керування навігацією між медіа елементами
+  // State for managing navigation between media elements
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
   
-  // Отримання всіх медіа URL для продукту
+  // Get all media URLs for the product
   const allMedia = React.useMemo(() => {
     const mediaArray: string[] = [];
     
-    // Додаємо основне зображення
+    // Add main image
     if (product.image) {
       mediaArray.push(product.image);
     }
     
-    // Додаємо додаткові зображення, якщо вони є
+    // Add additional images if they exist
     if (product.mediaUrls && Array.isArray(product.mediaUrls)) {
       product.mediaUrls.forEach(url => {
-        // Перевіряємо, щоб не додавати дублікати
+        // Check to avoid duplicates
         if (!mediaArray.includes(url)) {
           mediaArray.push(url);
         }
       });
     }
     
-    // Додаємо відео, якщо вони є
+    // Add videos if they exist
     if (product.videoUrls && Array.isArray(product.videoUrls)) {
       product.videoUrls.forEach(url => {
-        // Перевіряємо, щоб не додавати дублікати
+        // Check to avoid duplicates
         if (!mediaArray.includes(url)) {
           mediaArray.push(url);
         }
@@ -96,30 +96,30 @@ export default function ProductCard({ product }: { product: Product }) {
     return mediaArray;
   }, [product]);
   
-  // Перевірка, чи є поточне медіа відео
+  // Check if current media is video
   const isCurrentMediaVideo = currentMediaIndex < allMedia.length ? 
     isVideoFile(allMedia[currentMediaIndex]) : false;
   
-  // Стан для відстеження помилок завантаження
+  // State for tracking loading errors
   const [mediaError, setMediaError] = useState(false);
   
-  // Стан для відстеження готовності відео
+  // State for tracking video readiness
   const [videoReady, setVideoReady] = useState(false);
   
-  // Визначення, чи це мобільний пристрій
+  // Determine if this is a mobile device
   const [isMobile, setIsMobile] = useState(false);
   
-  // Посилання на відео елемент
+  // Reference to video element
   const videoRef = useRef<HTMLVideoElement>(null);
   
-  // Стан для відстеження наведення миші
+  // State for tracking mouse hover
   const [isHovered, setIsHovered] = useState(false);
   
-  // Перевірка мобільного пристрою при монтуванні компонента
+  // Check mobile device on component mount
   useEffect(() => {
     setIsMobile(window.matchMedia('(max-width: 768px)').matches);
     
-    // Додаємо прослуховувач зміни розміру екрана
+    // Add resize event listener
     const handleResize = () => {
       setIsMobile(window.matchMedia('(max-width: 768px)').matches);
     };
@@ -128,55 +128,55 @@ export default function ProductCard({ product }: { product: Product }) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
   
-  // Обробник помилки завантаження зображення
+  // Image error handler
   const handleImageError = () => {
     setMediaError(true);
   };
   
-  // Обробник помилки завантаження відео
+  // Video error handler
   const handleVideoError = () => {
-    console.error('Помилка завантаження відео:', getCurrentVideoUrl());
+    console.error('Error loading video:', getCurrentVideoUrl());
     setMediaError(true);
     setVideoReady(false);
     
-    // Показуємо спеціальне повідомлення для мобільних пристроїв
+    // Show special message for mobile devices
     if (isMobile) {
-      console.log('Відео не вдалося завантажити на мобільному пристрої');
-      // Видаляємо автоматичний перехід, щоб користувач міг бачити повідомлення про помилку
-      // і самостійно вирішувати, що робити далі
+      console.log('Video failed to load on mobile device');
+      // Remove automatic transition so user can see error message
+      // and decide what to do next
     }
   };
   
-  // Функція для обробки події готовності відео до відтворення
+  // Function to handle video ready to play event
   const handleVideoCanPlay = () => {
-    console.log('Відео готове до відтворення');
+    console.log('Video ready to play');
     setVideoReady(true);
     setMediaError(false);
     
-    // Автоматично відтворювати відео тільки на десктопі при наведенні миші
+    // Automatically play video only on desktop when mouse is hovered
     if (videoRef.current && isHovered && !isMobile) {
       videoRef.current.play().catch(error => {
-        console.error('Помилка автоматичного відтворення відео:', error);
+        console.error('Error playing video automatically:', error);
       });
     }
   };
   
-  // Додаємо нову функцію, яка буде спрацьовувати при кліку на кнопку "Спробувати знову"
+  // Add new function that will trigger when "Try again" button is clicked
   const handleRetryVideo = () => {
-    console.log('Повторна спроба відтворення відео');
+    console.log('Retrying video playback');
     setMediaError(false);
     setVideoReady(false);
     
-    // Затримка для перезавантаження відео
+    // Delay for reloading video
     setTimeout(() => {
       if (videoRef.current) {
-        // Перезавантажуємо відео
+        // Reload video
         videoRef.current.load();
         
-        // На мобільних пристроях спробуємо відтворити відео після перезавантаження
+        // On mobile devices try to play video after reloading
         if (isMobile) {
           videoRef.current.play().catch(err => {
-            console.error('Помилка при спробі відтворення відео після перезавантаження:', err);
+            console.error('Error playing video after reload:', err);
             setMediaError(true);
           });
         }
@@ -184,17 +184,17 @@ export default function ProductCard({ product }: { product: Product }) {
     }, 500);
   };
   
-  // Обробники наведення миші
+  // Mouse hover handlers
   const handleMouseEnter = () => {
     setIsHovered(true);
     
-    // Якщо є відео і воно доступне, запускаємо його
+    // If there's a video and it's available, play it
     if (videoRef.current && isCurrentMediaVideo) {
-      // Для мобільних пристроїв не починаємо автоматичне відтворення відео
-      // це допоможе зменшити використання трафіку
+      // For mobile devices, don't auto-play video
+      // this helps reduce data usage
       if (!isMobile) {
         videoRef.current.play().catch((error) => {
-          console.error('Помилка автоматичного відтворення відео:', error);
+          console.error('Error playing video automatically:', error);
           setMediaError(true);
         });
       }
@@ -204,13 +204,13 @@ export default function ProductCard({ product }: { product: Product }) {
   const handleMouseLeave = () => {
     setIsHovered(false);
     
-    // Якщо є відео, зупиняємо його
+    // If there's a video, stop it
     if (videoRef.current) {
       videoRef.current.pause();
     }
   };
   
-  // Функція для навігації до наступного медіа
+  // Function for navigating to the next media
   const nextMedia = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     if (allMedia.length > 1) {
@@ -220,7 +220,7 @@ export default function ProductCard({ product }: { product: Product }) {
     }
   };
   
-  // Функція для навігації до попереднього медіа
+  // Function for navigating to the previous media
   const prevMedia = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     if (allMedia.length > 1) {
@@ -230,7 +230,7 @@ export default function ProductCard({ product }: { product: Product }) {
     }
   };
   
-  // Функція отримання URL зображення з урахуванням помилок
+  // Function to get image URL considering errors
   const getImageUrl = (): string => {
     if (mediaError || (isCurrentMediaVideo && !videoReady)) {
       const placeholderId = (typeof product.id === 'string' ? product.id.charCodeAt(0) : 1) % 3 + 1;
@@ -238,7 +238,7 @@ export default function ProductCard({ product }: { product: Product }) {
     }
     
     if (isCurrentMediaVideo) {
-      // Для відео повертаємо плейсхолдер
+      // For video return a placeholder
       const placeholderId = (typeof product.id === 'string' ? product.id.charCodeAt(0) : 1) % 3 + 1;
       return `/placeholder-${placeholderId}.svg`;
     }
@@ -250,35 +250,35 @@ export default function ProductCard({ product }: { product: Product }) {
     return product.image || '/placeholder-1.svg';
   };
   
-  // Функція для перевірки, чи є медіа навігація
+  // Check if media navigation is available
   const hasNavigation = allMedia.length > 1;
   
-  // Отримуємо поточний відео URL
+  // Get current video URL
   const getCurrentVideoUrl = (): string | null => {
     try {
       if (currentMediaIndex >= 0 && currentMediaIndex < allMedia.length && isCurrentMediaVideo) {
         const videoUrl = allMedia[currentMediaIndex];
         
-        // Перевіряємо, чи URL валідний
+        // Check if URL is valid
         if (!videoUrl) return null;
         
-        // Створюємо URL об'єкт для перевірки
+        // Create URL object for validation
         const url = new URL(videoUrl, window.location.origin);
         
-        // Для мобільних пристроїв використовуємо додаткове логування
+        // For mobile devices use additional logging
         if (isMobile) {
-          console.log('Відтворення відео на мобільному пристрої:', videoUrl, url.pathname);
+          console.log('Playing video on mobile device:', videoUrl, url.pathname);
         }
         
         return videoUrl;
       }
     } catch (e) {
-      console.error('Помилка при отриманні URL відео:', e);
+      console.error('Error getting video URL:', e);
     }
     return null;
   };
 
-  // Функція для відкриття відео на повний екран
+  // Function to open video in fullscreen
   const openFullscreen = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     
@@ -293,41 +293,41 @@ export default function ProductCard({ product }: { product: Product }) {
     }
   };
 
-  // Оновимо useEffect для відстеження змін поточного медіа
+  // Update useEffect to track changes in current media
   useEffect(() => {
     setMediaError(false);
     setVideoReady(false);
     
-    // Додамо затримку для мобільних пристроїв, щоб зменшити навантаження
+    // Add delay for mobile devices to reduce load
     const timer = setTimeout(() => {
-      // Якщо поточне медіа є відео і користувач навів мишку,
-      // почнемо відтворення, але тільки на десктопах
+      // If current media is video and user has hovered mouse,
+      // start playback, but only on desktops
       if (videoRef.current && isHovered && isCurrentMediaVideo && !isMobile) {
         videoRef.current.play().catch((error) => {
-          console.error('Помилка відтворення відео:', error);
+          console.error('Error playing video:', error);
           setMediaError(true);
         });
       }
       
-      // Для мобільних пристроїв просто перевіримо, чи можемо ми відтворити відео
+      // For mobile devices just check if we can play the video
       if (isCurrentMediaVideo && isMobile && videoRef.current) {
         const videoUrl = getCurrentVideoUrl();
         if (videoUrl) {
-          console.log('Перевірка підтримки відео для мобільного пристрою:', videoUrl);
+          console.log('Checking video support for mobile device:', videoUrl);
           
-          // Встановлюємо явно розмір відео для кращої підтримки мобільних пристроїв
+          // Set explicit video size for better mobile device support
           if (videoRef.current) {
             videoRef.current.width = 320;
             videoRef.current.height = 240;
           }
           
-          // Для мобільних пристроїв в iOS часто є обмеження на автоматичне відтворення
+          // For mobile devices on iOS there are often restrictions on autoplay
           if (navigator && navigator.userAgent && /iPhone|iPad|iPod/.test(navigator.userAgent)) {
-            console.log('Виявлено iOS пристрій, відео може не відтворюватися автоматично');
+            console.log('iOS device detected, video may not play automatically');
           }
         }
       }
-    }, isMobile ? 500 : 0); // Затримка для мобільних пристроїв
+    }, isMobile ? 500 : 0); // Delay for mobile devices
     
     return () => clearTimeout(timer);
   }, [currentMediaIndex, isHovered, isCurrentMediaVideo, isMobile]);
@@ -388,7 +388,7 @@ export default function ProductCard({ product }: { product: Product }) {
                     if (videoRef.current.paused) {
                       videoRef.current.play()
                         .catch(err => {
-                          console.error('Помилка відтворення відео:', err);
+                          console.error('Error playing video:', err);
                           setMediaError(true);
                         });
                     } else {
@@ -421,12 +421,12 @@ export default function ProductCard({ product }: { product: Product }) {
         {/* Show placeholder if video has error */}
         {isCurrentMediaVideo && mediaError && (
           <div className={styles.videoErrorPlaceholder}>
-            <p>{isMobile ? 'Відео недоступне на вашому пристрої' : 'Video unavailable'}</p>
+            <p>{isMobile ? 'Video unavailable on your device' : 'Video unavailable'}</p>
             <button 
               className={styles.retryButton}
               onClick={handleRetryVideo}
             >
-              Спробувати знову
+              Try again
             </button>
           </div>
         )}
@@ -460,7 +460,7 @@ export default function ProductCard({ product }: { product: Product }) {
         )}
       </div>
       
-      {/* Інформація про продукт */}
+      {/* Product information */}
       <div className={styles.info}>
         <h3 className={styles.name}>{product.Name}</h3>
         <p className={styles.thc}>

@@ -18,7 +18,7 @@ interface MediaItem {
   [key: string]: any;
 }
 
-// Функція для визначення, чи є файл відео за його ім'ям
+// Function to determine if a file is a video by its name
 function isVideoFile(filename: string | undefined): boolean {
   if (!filename) return false;
   const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.wmv', '.mkv', '.m4v'];
@@ -89,41 +89,41 @@ export async function GET() {
       }
       
       const transformedData = {
-        data: Array.isArray(data.data) ? data.data.map((product) => {
-          // Ініціалізуємо масиви для медіа та відео URL
+        data: Array.isArray(data.data) ? data.data.map((product: any) => {
+          // Initialize arrays for media and video URLs
           const mediaUrls: string[] = [];
           const videoUrls: string[] = [];
           
-          // Перевіряємо, чи має продукт поле Media і чи воно є масивом
+          // Check if product has Media field and if it's an array
           if (product.Media && Array.isArray(product.Media) && product.Media.length > 0) {
             
-            // Обробляємо кожен елемент Media
+            // Process each Media element
             product.Media.forEach((mediaItem: MediaItem) => {
               
-              // Перевіряємо різні варіанти структури directus_files_id
+              // Check various directus_files_id structure variants
               let fileId = null;
               let filename = null;
               
               if (mediaItem.directus_files_id) {
                 if (typeof mediaItem.directus_files_id === 'string') {
-                  // Якщо це просто рядок - використовуємо його
+                  // If it's a string - use it directly
                   fileId = mediaItem.directus_files_id;
                   
-                  // Припускаємо, що файл є зображенням, якщо немає додаткової інформації
+                  // Assume the file is an image if there's no additional information
                   mediaUrls.push(`/api/media/${fileId}`);
                 } else if (typeof mediaItem.directus_files_id === 'object') {
-                  // Якщо це об'єкт - спробуємо знайти ID та filename
+                  // If it's an object - try to find ID and filename
                   
-                  // Перевіряємо, чи має об'єкт властивість id
+                  // Check if the object has id property
                   const fileObject = mediaItem.directus_files_id;
                   if (fileObject && fileObject.id) {
                     fileId = fileObject.id;
                     filename = fileObject.filename_download;
                     
-                    // Створюємо URL для медіа через наш проксі
+                    // Create media URL through our proxy
                     const mediaUrl = `/api/media/${fileId}`;
                     
-                    // Визначаємо тип медіа на основі імені файлу
+                    // Determine media type based on filename
                     if (filename && isVideoFile(filename)) {
                       videoUrls.push(mediaUrl);
                     } else {
@@ -135,14 +135,14 @@ export async function GET() {
             });
           }
           
-          // Якщо медіа не знайдено, використовуємо локальний плейсхолдер
+          // If no media found, use local placeholder
           let mainImageUrl: string;
           if (mediaUrls.length > 0) {
-            mainImageUrl = mediaUrls[0]; // Використовуємо перший елемент як основне зображення
+            mainImageUrl = mediaUrls[0]; // Use first element as main image
           } else {
             const placeholderId = (typeof product.id === 'number' ? product.id : 1) % 3 + 1;
             mainImageUrl = `/placeholder-${placeholderId}.svg`;
-            // Додаємо плейсхолдер у масив медіа для можливого використання в майбутньому
+            // Add placeholder to media array for possible future use
             mediaUrls.push(mainImageUrl);
           }
           
@@ -160,7 +160,7 @@ export async function GET() {
       
       return NextResponse.json(transformedData);
     } catch (_) {
-      // Якщо сталася помилка, повертаємо тестові дані для продовження розробки
+      // If an error occurred, return test data to continue development
       return NextResponse.json({
         data: createTestProducts()
       });
@@ -173,7 +173,7 @@ export async function GET() {
   }
 }
 
-// Функція для створення тестових продуктів (використовується якщо API недоступне)
+// Function to create test products (used when API is unavailable)
 function createTestProducts() {
   const products = [
     {
