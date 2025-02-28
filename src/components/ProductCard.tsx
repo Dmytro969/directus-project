@@ -133,6 +133,9 @@ export default function ProductCard({ product }: { product: Product }) {
   // Додатковий прапорець для відстеження поточної операції
   const isHandlingPlayback = useRef<boolean>(false);
   
+  // Додаю посилання на контейнер зображення
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+  
   // Перевірка мобільного пристрою при монтуванні компонента
   useEffect(() => {
     setIsMobile(window.matchMedia('(max-width: 768px)').matches);
@@ -416,16 +419,18 @@ export default function ProductCard({ product }: { product: Product }) {
   // Компонент для відображення зображення з обробкою помилок
   const ImageComponent = ({ src, alt }: { src: string, alt: string }) => {
     return (
-      <Image
-        src={src}
-        alt={alt}
-        className={styles.productImage}
-        width={300}
-        height={300}
-        onError={handleImageError}
-        priority={currentMediaIndex === 0}
-        unoptimized={src.startsWith('/api/media/')} // Не оптимізуємо через Next Image для API медіа
-      />
+      <div onClick={handleMediaClick} style={{ width: '100%', height: '100%', cursor: 'pointer' }}>
+        <Image
+          src={src}
+          alt={alt}
+          className={styles.productImage}
+          width={300}
+          height={300}
+          onError={handleImageError}
+          priority={currentMediaIndex === 0}
+          unoptimized={src.startsWith('/api/media/')} // Не оптимізуємо через Next Image для API медіа
+        />
+      </div>
     );
   };
   
@@ -483,11 +488,17 @@ export default function ProductCard({ product }: { product: Product }) {
   // Функція для перевірки, чи є медіа навігація
   const hasNavigation = allMedia.mediaArray.length > 1;
   
-  // Функція для запуску відео по тачу на мобільному пристрої
-  const handleMediaContainerClick = () => {
-    // Уникаємо обробки кліку, якщо клікнуто на кнопку повноекранного режиму
+  // Оновлена функція для обробки кліків по контейнеру медіа
+  const handleMediaContainerClick = (e: React.MouseEvent) => {
+    // Якщо це зображення, обробляємо через новий метод відкриття на повний екран
+    if (!isCurrentMediaVideo) {
+      openImageFullscreen(e);
+      return;
+    }
+    
+    // Якщо це відео на мобільному, змінюємо стан відтворення
     if (isMobile && isCurrentMediaVideo && videoRef.current) {
-      console.log('Media container clicked on mobile');
+      console.log('Media container clicked on mobile for video');
       if (videoRef.current.paused) {
         safePlayVideo();
       } else {
@@ -579,6 +590,67 @@ export default function ProductCard({ product }: { product: Product }) {
     };
   }, [isHovered, isCurrentMediaVideo, isMobile, videoReady]);
 
+  // Новий метод для відкриття зображення на повний екран
+  const openImageFullscreen = (e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    
+    if (isCurrentMediaVideo) {
+      // Якщо це відео, використовуємо існуючий метод
+      openFullscreen(e);
+      return;
+    }
+    
+    if (!imageContainerRef.current) {
+      console.warn("Image container reference is not available");
+      return;
+    }
+    
+    try {
+      console.log("Opening image in fullscreen mode...");
+      
+      // Спочатку тестуємо стандартний API
+      if (imageContainerRef.current.requestFullscreen) {
+        imageContainerRef.current.requestFullscreen().catch(err => {
+          console.error("Error requesting fullscreen for image:", err);
+          tryAlternativeFullscreen();
+        });
+      } else {
+        tryAlternativeFullscreen();
+      }
+      
+      function tryAlternativeFullscreen() {
+        if (!imageContainerRef.current) return;
+        
+        // Альтернативні методи для різних браузерів
+        if ((imageContainerRef.current as any).webkitRequestFullscreen) {
+          (imageContainerRef.current as any).webkitRequestFullscreen();
+        } else if ((imageContainerRef.current as any).mozRequestFullScreen) {
+          (imageContainerRef.current as any).mozRequestFullScreen();
+        } else if ((imageContainerRef.current as any).msRequestFullscreen) {
+          (imageContainerRef.current as any).msRequestFullscreen();
+        } else {
+          console.warn("Fullscreen API is not supported in this browser");
+        }
+      }
+    } catch (error) {
+      console.error("Error in image fullscreen function:", error);
+    }
+  };
+
+  // Новий обробник для натискання на зображення
+  const handleMediaClick = (e: React.MouseEvent) => {
+    // Відкриваємо зображення на повний екран при натисканні
+    if (!isCurrentMediaVideo) {
+      openImageFullscreen(e);
+    } else if (isMobile) {
+      // Для відео на мобільних пристроях залишаємо стару логіку
+      handleMediaContainerClick(e);
+    }
+  };
+
   return (
     <div 
       className={styles.card}
@@ -595,7 +667,8 @@ export default function ProductCard({ product }: { product: Product }) {
       {/* Container for media */}
       <div 
         className={styles.mediaContainer}
-        onClick={handleMediaContainerClick}
+        onClick={(e) => handleMediaContainerClick(e)}
+        ref={imageContainerRef}
       >
         {/* Змінена логіка відображення медіа */}
         {isCurrentMediaVideo ? (

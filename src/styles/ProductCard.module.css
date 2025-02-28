@@ -345,27 +345,31 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform 0.2s ease;
+  cursor: pointer;
 }
 
 .mediaNavigation {
   position: absolute;
-  top: 0.75rem;
+  bottom: 0.75rem;
   left: 0;
   right: 0;
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 10;
-  background-color: rgba(0, 0, 0, 0.3);
-  padding: 0.25rem 0.75rem;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 0.3rem 0.85rem;
   border-radius: 1rem;
   margin: 0 auto;
   width: fit-content;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .mediaCounter {
   color: white;
   font-size: 0.875rem;
+  font-weight: 600;
 }
 
 .videoErrorPlaceholder {
@@ -454,7 +458,7 @@
   }
   
   .mediaNavigation {
-    top: 1rem;
+    bottom: 1rem;
     padding: 0.5rem 1rem;
     background-color: rgba(0, 0, 0, 0.6);
     border-radius: 2rem;
@@ -626,4 +630,7 @@
   border-radius: 2.5rem;
 }
 
-/* Відключаємо hover-ефекти для мобільних пристроїв */ 
+/* Відключаємо hover-ефекти для мобільних пристроїв */
+.mediaContainer:active .productImage {
+  transform: scale(0.98);
+} 
