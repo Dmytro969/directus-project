@@ -1,0 +1,41 @@
+{
+  "name": "directus",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "directus:start": "docker-compose up -d",
+    "directus:stop": "docker-compose down",
+    "directus:init": "node scripts/init-directus.js",
+    "directus:seed": "node scripts/seed-directus.js",
+    "dev:all": "docker-compose up -d && next dev",
+    "setup": "docker-compose up -d && sleep 10 && node scripts/init-directus.js && node scripts/seed-directus.js && next dev",
+    "directus:install": "npx create-directus-project directus-local",
+    "directus:start:local": "cd directus-local && npx directus start",
+    "setup:local": "npm run directus:install && cd directus-local && npx directus bootstrap && cd .. && npm run directus:init && npm run directus:seed && npm run dev"
+  },
+  "dependencies": {
+    "@directus/sdk": "^18.0.3",
+    "axios": "^1.6.7",
+    "dotenv": "^16.4.5",
+    "next": "15.1.7",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "swr": "^2.3.2"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "autoprefixer": "^10.0.1",
+    "eslint": "^9",
+    "eslint-config-next": "15.1.7",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
+  }
+}

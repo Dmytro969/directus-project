@@ -1,0 +1,8 @@
+<svg width="300" height="300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100%" height="100%" fill="#fff0f5"/>
+  <circle cx="150" cy="100" r="60" fill="#ffcdd2"/>
+  <ellipse cx="150" cy="190" rx="70" ry="30" fill="#ffcdd2"/>
+  <rect x="120" y="210" width="60" height="10" fill="#ffcdd2"/>
+  <rect x="130" y="230" width="40" height="10" fill="#ffcdd2"/>
+  <text x="150" y="270" font-family="Arial" font-size="14" text-anchor="middle" fill="#333">Placeholder Image 3</text>
+</svg> 

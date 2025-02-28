@@ -1,0 +1,629 @@
+.card {
+  background-color: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  transition: transform 0.3s, box-shadow 0.3s;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+}
+
+.imageContainer {
+  position: relative;
+  height: 300px;
+  width: 100%;
+  overflow: hidden;
+  background-color: #f5f5f5;
+}
+
+.productImage,
+.productVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.3s ease;
+}
+
+.videoWrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.fullscreenButton {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 5;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.fullscreenButton:hover {
+  background-color: rgba(0, 0, 0, 0.7);
+  transform: scale(1.1);
+}
+
+.hidden {
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+.visible {
+  opacity: 1;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+}
+
+.newBadge {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: linear-gradient(135deg, #00c853 0%, #009688 100%);
+  color: white;
+  padding: 0.4rem 0.9rem;
+  border-radius: 2rem;
+  font-weight: 700;
+  font-size: 0.875rem;
+  z-index: 10;
+  box-shadow: 0 3px 10px rgba(0, 200, 83, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  transform: translateY(0);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(4px);
+}
+
+.card:hover .newBadge {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 200, 83, 0.4);
+}
+
+/* Стилі для кнопок перемикання медіа */
+.mediaButton {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.3s, background-color 0.3s;
+  z-index: 10;
+}
+
+.prevButton, .nextButton {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 2.75rem;
+  height: 2.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.5rem;
+  transition: background-color 0.3s, transform 0.2s;
+  z-index: 10;
+  opacity: 0;
+}
+
+.prevButton {
+  left: 0.75rem;
+}
+
+.nextButton {
+  right: 0.75rem;
+}
+
+.card:hover .mediaButton {
+  opacity: 0.8;
+}
+
+.mediaButton:hover {
+  opacity: 1 !important;
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.card:hover .prevButton,
+.card:hover .nextButton {
+  opacity: 0.8;
+}
+
+.prevButton:hover, .nextButton:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+  transform: translateY(-50%) scale(1.05);
+  opacity: 1;
+}
+
+/* Стилі для індикаторів медіа */
+.mediaIndicators {
+  position: absolute;
+  bottom: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+  z-index: 10;
+}
+
+.mediaIndicator {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.5);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.activeMediaIndicator {
+  background-color: white;
+  transform: scale(1.2);
+}
+
+.placeholderImage {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f0f0;
+  color: #444;
+  font-size: 1.2rem;
+  text-align: center;
+  padding: 1rem;
+  border-radius: 0.25rem 0.25rem 0 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+.placeholderImage span {
+  background-color: rgba(255, 255, 255, 0.7);
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-width: 80%;
+}
+
+.noImage {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e5e5e5;
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.info {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  background: linear-gradient(to bottom, #ffffff, #f9f9f9);
+  border-top: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 0.75rem;
+  line-height: 1.3;
+}
+
+.thc, .type {
+  font-size: 0.95rem;
+  color: #1f2937;
+  margin-bottom: 0.625rem;
+  font-weight: 500;
+  background-color: rgba(226, 232, 240, 0.5);
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+  display: inline-block;
+}
+
+.thc {
+  color: #047857;
+  background-color: rgba(209, 250, 229, 0.6);
+}
+
+.aroma, .effects {
+  font-size: 0.925rem;
+  margin-bottom: 0.625rem;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+.aromaLabel, .effectsLabel, .thcLabel, .typeLabel {
+  font-weight: 600;
+  color: #111827;
+  margin-right: 0.375rem;
+}
+
+.thcValue {
+  font-weight: 700;
+  color: #047857;
+}
+
+.typeValue {
+  font-weight: 500;
+}
+
+.aromaValue, .effectsValue {
+  font-weight: 400;
+  font-style: italic;
+}
+
+.price {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #2563eb;
+  margin-top: auto;
+  margin-bottom: 0.75rem;
+  align-self: flex-end;
+}
+
+.detail {
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-weight: 600;
+  color: #4b5563;
+  margin-right: 0.25rem;
+}
+
+.value {
+  color: #6b7280;
+}
+
+.mediaContainer {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1/1;
+  overflow: hidden;
+  border-radius: 0.75rem 0.75rem 0 0;
+  background-color: #f5f5f5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.productImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.mediaNavigation {
+  position: absolute;
+  top: 0.75rem;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  background-color: rgba(0, 0, 0, 0.3);
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  margin: 0 auto;
+  width: fit-content;
+}
+
+.mediaCounter {
+  color: white;
+  font-size: 0.875rem;
+}
+
+.videoErrorPlaceholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  z-index: 4;
+  padding: 20px;
+  text-align: center;
+}
+
+.retryButton {
+  margin-top: 10px;
+  padding: 8px 16px;
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.retryButton:hover {
+  background-color: #4338ca;
+}
+
+/* Додаткові стилі для відео */
+.productVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.videoReady {
+  opacity: 1;
+}
+
+.videoContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-color: #000;
+}
+
+/* Мобільні стилі */
+@media (max-width: 768px) {
+  .card:hover {
+    transform: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+  }
+  
+  .card:active {
+    transform: scale(0.98);
+  }
+  
+  .mediaContainer {
+    aspect-ratio: 1 / 1;
+    max-height: 300px;
+  }
+  
+  .prevButton, .nextButton {
+    width: 3.25rem;
+    height: 3.25rem;
+    font-size: 1.75rem;
+    opacity: 0.9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .prevButton svg, .nextButton svg {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .mediaNavigation {
+    top: 1rem;
+    padding: 0.5rem 1rem;
+    background-color: rgba(0, 0, 0, 0.6);
+    border-radius: 2rem;
+  }
+  
+  .mediaCounter {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  
+  .info {
+    padding: 1rem;
+  }
+  
+  .name {
+    font-size: 1.15rem;
+    margin-bottom: 0.625rem;
+  }
+  
+  .thc, .type, .aroma, .effects {
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .thc, .type {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .fullscreenButton {
+    opacity: 0.9;
+    width: 48px;
+    height: 48px;
+    bottom: 15px;
+    right: 15px;
+  }
+  
+  .videoErrorPlaceholder {
+    font-size: 1rem;
+  }
+  
+  .retryButton {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+  }
+  
+  .newBadge {
+    padding: 0.5rem 1rem;
+    font-size: 0.9375rem;
+    border-radius: 2.5rem;
+  }
+  
+  /* Відключаємо hover-ефекти для мобільних пристроїв */
+  .card:hover .prevButton,
+  .card:hover .nextButton {
+    opacity: 0.9;
+  }
+  
+  /* Показуємо кнопки навігації завжди на мобільних */
+  .prevButton, .nextButton {
+    opacity: 0.8;
+  }
+}
+
+/* Телефони */
+@media (max-width: 480px) {
+  .mediaContainer {
+    aspect-ratio: 1 / 1;
+    max-height: none;
+  }
+  
+  .name {
+    font-size: 1.05rem;
+  }
+  
+  .thc, .type, .aroma, .effects {
+    font-size: 0.8125rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .thc, .type {
+    display: block;
+    width: auto;
+    margin-right: 0;
+    margin-bottom: 0.5rem;
+  }
+  
+  .prevButton, .nextButton {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+  
+  .prevButton svg, .nextButton svg {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .aromaLabel, .effectsLabel, .thcLabel, .typeLabel {
+    font-size: 0.8125rem;
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+  
+  .aromaValue, .effectsValue, .thcValue, .typeValue {
+    display: block;
+  }
+  
+  .fullscreenButton {
+    width: 42px;
+    height: 42px;
+    bottom: 10px;
+    right: 10px;
+  }
+  
+  .videoErrorPlaceholder p {
+    margin-bottom: 0.75rem;
+  }
+  
+  .retryButton {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Стилі для індикатора завантаження відео */
+.videoLoadingPlaceholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.1);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  border-radius: 0.75rem 0.75rem 0 0;
+  z-index: 5;
+}
+
+.loaderSpinner {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.retryButton {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+}
+
+.newBadge {
+  padding: 0.5rem 1rem;
+  font-size: 0.9375rem;
+  border-radius: 2.5rem;
+}
+
+/* Відключаємо hover-ефекти для мобільних пристроїв */ 
