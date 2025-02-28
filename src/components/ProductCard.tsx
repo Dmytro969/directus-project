@@ -603,41 +603,51 @@ export default function ProductCard({ product }: { product: Product }) {
       return;
     }
     
-    if (!imageContainerRef.current) {
-      console.warn("Image container reference is not available");
-      return;
-    }
+    // Створюємо контейнер для повноекранного режиму
+    const container = document.createElement('div');
+    container.style.position = 'fixed';
+    container.style.top = '0';
+    container.style.left = '0';
+    container.style.width = '100%';
+    container.style.height = '100%';
+    container.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+    container.style.zIndex = '9999';
+    container.style.display = 'flex';
+    container.style.justifyContent = 'center';
+    container.style.alignItems = 'center';
+    container.style.transition = 'opacity 0.3s ease';
+    container.style.opacity = '0';
     
-    try {
-      console.log("Opening image in fullscreen mode...");
+    // Створюємо зображення
+    const img = document.createElement('img');
+    img.src = getImageUrl();
+    img.style.maxWidth = '95%';
+    img.style.maxHeight = '90%';
+    img.style.objectFit = 'contain';
+    img.style.boxShadow = '0 5px 30px rgba(0, 0, 0, 0.3)';
+    img.style.transform = 'scale(0.95)';
+    img.style.transition = 'transform 0.3s ease';
+    
+    // Додаємо елементи до документа
+    container.appendChild(img);
+    document.body.appendChild(container);
+    
+    // Застосовуємо анімацію з невеликою затримкою
+    setTimeout(() => {
+      container.style.opacity = '1';
+      img.style.transform = 'scale(1)';
+    }, 30);
+    
+    // Додаємо обробник для закриття при натисканні
+    container.onclick = () => {
+      container.style.opacity = '0';
+      img.style.transform = 'scale(0.95)';
       
-      // Спочатку тестуємо стандартний API
-      if (imageContainerRef.current.requestFullscreen) {
-        imageContainerRef.current.requestFullscreen().catch(err => {
-          console.error("Error requesting fullscreen for image:", err);
-          tryAlternativeFullscreen();
-        });
-      } else {
-        tryAlternativeFullscreen();
-      }
-      
-      function tryAlternativeFullscreen() {
-        if (!imageContainerRef.current) return;
-        
-        // Альтернативні методи для різних браузерів
-        if ((imageContainerRef.current as any).webkitRequestFullscreen) {
-          (imageContainerRef.current as any).webkitRequestFullscreen();
-        } else if ((imageContainerRef.current as any).mozRequestFullScreen) {
-          (imageContainerRef.current as any).mozRequestFullScreen();
-        } else if ((imageContainerRef.current as any).msRequestFullscreen) {
-          (imageContainerRef.current as any).msRequestFullscreen();
-        } else {
-          console.warn("Fullscreen API is not supported in this browser");
-        }
-      }
-    } catch (error) {
-      console.error("Error in image fullscreen function:", error);
-    }
+      // Видаляємо елемент після завершення анімації
+      setTimeout(() => {
+        document.body.removeChild(container);
+      }, 300);
+    };
   };
 
   // Новий обробник для натискання на зображення
@@ -714,12 +724,14 @@ export default function ProductCard({ product }: { product: Product }) {
         {/* Navigation elements */}
         {hasNavigation && (
           <>
-            {/* Navigation counter */}
-            <div className={styles.mediaNavigation}>
-              <span className={styles.mediaCounter}>
-                {currentMediaIndex + 1} / {allMedia.mediaArray.length}
-              </span>
-            </div>
+            {/* Navigation counter - показуємо тільки на десктопі */}
+            {!isMobile && (
+              <div className={styles.mediaNavigation}>
+                <span className={styles.mediaCounter}>
+                  {currentMediaIndex + 1} / {allMedia.mediaArray.length}
+                </span>
+              </div>
+            )}
             
             {/* Navigation buttons */}
             <button 
