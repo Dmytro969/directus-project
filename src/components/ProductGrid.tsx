@@ -111,9 +111,21 @@ export default function ProductGrid() {
         <div className={styles.empty}>No products found.</div>
       ) : (
         <div className={styles.grid}>
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+          {products
+            // Сортуємо продукти за полем sort_order, якщо воно доступне
+            .sort((a, b) => {
+              // Якщо є поле sort_order, сортуємо за ним
+              if (a.sort_order !== undefined && b.sort_order !== undefined) {
+                return a.sort_order - b.sort_order;
+              }
+              // Якщо sort_order відсутній, використовуємо сортування за id (як раніше)
+              return typeof a.id === 'number' && typeof b.id === 'number' 
+                ? b.id - a.id 
+                : String(a.id).localeCompare(String(b.id));
+            })
+            .map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
         </div>
       )}
     </div>

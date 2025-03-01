@@ -7,6 +7,7 @@ export interface Product {
   Type?: string;
   thc_purity?: string; 
   thc_purity_value?: number | null;
+  sort_order?: number;
   
   // Поле Media може мати різні формати
   Media?: Array<

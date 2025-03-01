@@ -57,7 +57,7 @@ export async function GET() {
     
     // Оновлюємо запит відповідно до нової структури API
     // Додаємо більше інформації про медіа файли, щоб коректно визначати їх тип
-    const apiUrl = `${directusUrl}/items/products?fields=id,Name,is_new,Aroma,Effects,Type,thc_purity,thc_purity_value,Media.*,Media.directus_files_id.*`;
+    const apiUrl = `${directusUrl}/items/products?fields=id,Name,is_new,Aroma,Effects,Type,thc_purity,thc_purity_value,sort_order,Media.*,Media.directus_files_id.*&sort=sort_order`;
     
     try {
       // Додаємо можливі заголовки автентифікації
@@ -187,6 +187,7 @@ function getExampleProducts() {
       Type: "Hybrid (Indica 60% / Sativa 40%)",
       thc_purity: "THC",
       thc_purity_value: 23,
+      sort_order: 0,
       // Надаємо дані про медіа з правильною структурою для коректної обробки
       image: `/placeholder-1.svg`,
       mediaUrls: [`/placeholder-1.svg`],

@@ -16,8 +16,8 @@ export async function getProducts(): Promise<Product[]> {
     // Робимо реальний запит до Directus API з новою структурою полів
     const products = await directus.request(
       readItems('products', {
-        sort: ['-id'],
-        fields: ['id', 'Name', 'is_new', 'Aroma', 'Effects', 'Type', 'thc_purity', 'thc_purity_value', 'Media']
+        sort: ['sort_order'],
+        fields: ['id', 'Name', 'is_new', 'Aroma', 'Effects', 'Type', 'thc_purity', 'thc_purity_value', 'sort_order', 'Media']
       })
     ) as Product[];
     
@@ -36,6 +36,7 @@ export async function getProducts(): Promise<Product[]> {
         Type: "Hybrid (Indica 60% / Sativa 40%)",
         thc_purity: "THC",
         thc_purity_value: 23,
+        sort_order: 0,
         Media: [
           {
             id: 8,
