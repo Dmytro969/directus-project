@@ -28,6 +28,11 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  onDemandEntries: {
+    maxInactiveAge: 60 * 60 * 1000,
+    pagesBufferLength: 2,
+  },
+  reactProductionProfiling: false,
 }
 
 module.exports = nextConfig 
